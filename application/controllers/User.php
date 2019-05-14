@@ -83,10 +83,10 @@ function login_user(){
 function user_profile(){
   $userid = $_SESSION['user_id'];
   $workspace_data = $this->user_model->workspace($userid);
-
   $data = array();
   foreach ($workspace_data as $ws) {
-    $data['workspace_'.$ws['workspace_ID']] = array('name' => $ws['name'],
+    $data['workspace_'.$ws['workspace_ID']] = array('workspace_id' => $ws['workspace_ID'],
+                                                    'name' => $ws['name'],
                                                     'desc' => $ws['description'],
                                                     'creater_id' => $ws['creater_ID'],
                                                     'create_time' => $ws['create_time'] );
@@ -95,11 +95,44 @@ function user_profile(){
   $this->load->view('user_profile.php', $data);
 }
 
+public function get_channels(){
+  $userid = $_POST['user_id'];
+  $workspaceid = $_POST['workspace_id'];
+  $channel_data = $this->user_model->get_channels($userid,$workspaceid);
+
+  echo json_encode($channel_data);
+}
+
+public function get_channel_users(){
+  $channelid = $_POST['channel_id'];
+
+  $channel_user_data = $this->user_model->get_channel_users($channelid);
+
+  echo json_encode($channel_user_data);
+}
+
+public function get_channel_messages(){
+  $channelid = $_POST['channel_id'];
+
+  $channel_message_data = $this->user_model->get_channel_messages($channelid);
+
+  echo json_encode($channel_message_data);
+}
+
+public function get_nonmembers_workspace(){
+
+  $workspaceid = $_POST['workspace_id'];
+  $nonmembers_workspace_data = $this->user_model->get_nonmembers_workspace($workspaceid);
+
+  echo json_encode($nonmembers_workspace_data);
+}
+
 public function user_logout(){
 
   $this->session->sess_destroy();
   redirect('user/login_view', 'refresh');
 }
+
 
 }
 
