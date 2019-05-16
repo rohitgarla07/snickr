@@ -148,6 +148,77 @@ public function get_nonmembers_workspace($workspace_id){
 
 }
 
+public function get_members_workspace($workspace_id){
+  #$channel_id = mysql_real_escape_string($channel_id);
+  $query = $this->db->query("SELECT u.user_ID, u.username
+	                             from user as u
+                               inner join WORKSPACEROLE as w
+                               on w.member_ID  = u.user_ID
+                               where w.workspace_ID ='$workspace_id' and w.role = 'MEMBER'");
+
+
+  if($query->result())
+  {
+
+    return $query->result_array();
+    // return "TEST";
+  }
+  else{
+    return false;
+  }
+
+
+}
+
+public function get_non_channel_members($channel_id){
+  #$channel_id = mysql_real_escape_string($channel_id);
+  // SELECT user_ID, username from user where user_ID in ( SELECT w.member_ID from WORKSPACEROLE as w where w.member_ID not in (SELECT user_ID from CHANNELMEMBERSHIP where channel_ID = 3))
+  // Select member_ID from WORKSPACEROLE where workspace_ID =
+  //   (Select workspace_ID from WORKSPACEROLE where membership_ID =
+  //     (Select membership_ID from CHANNEL where channel_ID = 1)) and member_ID not in
+  //       (Select user_ID from CHANNELMEMBERSHIP where channel_ID = 1);
+  $query = $this->db->query("SELECT username, user_ID from USER where user_ID in
+    (SELECT member_ID from WORKSPACEROLE where workspace_ID =
+      (SELECT workspace_ID from WORKSPACEROLE where membership_ID = 
+        (SELECT membership_ID from CHANNEL where channel_ID = '$channel_id')) and member_ID not in
+          (SELECT user_ID from CHANNELMEMBERSHIP where channel_ID = '$channel_id'))");
+
+
+  if($query->result())
+  {
+
+    return $query->result_array();
+    // return "TEST";
+  }
+  else{
+    return false;
+  }
+
+
+}
+
+public function get_workspace_members($workspace_id){
+  #$channel_id = mysql_real_escape_string($channel_id);
+  $query = $this->db->query("SELECT u.user_ID, u.username
+	                             from user as u
+                               inner join WORKSPACEROLE as w
+                               on w.member_ID  = u.user_ID
+                               where w.workspace_ID ='$workspace_id' and w.role = 'MEMBER'");
+
+
+  if($query->result())
+  {
+
+    return $query->result_array();
+    // return "TEST";
+  }
+  else{
+    return false;
+  }
+
+
+}
+
 }
 
 

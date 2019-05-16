@@ -126,6 +126,26 @@ public function get_nonmembers_workspace(){
 
   echo json_encode($nonmembers_workspace_data);
 }
+public function get_members_workspace(){
+  $workspaceid = $_POST['workspace_id'];
+  $members_workspace_data = $this->user_model->get_workspace_members($workspaceid);
+
+  echo json_encode($members_workspace_data);
+}
+
+public function get_non_channel_members(){
+  $channelid = $_POST['channel_id'];
+  $non_members_channel_data = $this->user_model->get_non_channel_members($channelid);
+  echo json_encode($non_members_channel_data);
+}
+
+public function get_workspace_members(){
+
+  $workspaceid = $_POST['workspace_id'];
+  $members_workspace_data = $this->user_model->get_workspace_members($workspaceid);
+
+  echo json_encode($members_workspace_data);
+}
 
 public function user_logout(){
 
