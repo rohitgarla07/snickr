@@ -147,6 +147,69 @@ public function get_workspace_members(){
   echo json_encode($members_workspace_data);
 }
 
+public function add_to_workspace(){
+
+  $workspaceid = $_POST['workspace_id'];
+  $userid = $_POST['user_id'];
+  $role = $_POST['role'];
+
+  $data = $this->user_model->add_to_workspace($workspaceid, $userid, $role);
+  if ($data) {
+    $this->session->set_flashdata('member_added_successfull', 'Member Added Successfully to the Workspace');
+  }
+
+  echo json_encode($data);
+}
+
+public function delete_from_workspace(){
+
+  $workspaceid = $_POST['workspace_id'];
+  $userid = $_POST['user_id'];
+  $role = $_POST['role'];
+
+  $data = $this->user_model->delete_from_workspace($workspaceid, $userid, $role);
+  if ($data) {
+    $this->session->set_flashdata('delete_ws_member', 'Member Deleted Successfully');
+  }
+  echo json_encode($data);
+}
+
+public function add_member_to_channel(){
+
+  $workspaceid = $_POST['workspace_id'];
+  $channelid = $_POST['channel_id'];
+  $userid = $_POST['user_id'];
+
+  $data = $this->user_model->add_member_to_channel($workspaceid, $channelid, $userid);
+  if ($data) {
+    $this->session->set_flashdata('add_channel_member_msg', 'Member Added Successfully to the Channel');
+  }
+  echo json_encode($data);
+}
+
+public function delete_member_from_channel(){
+
+  $workspaceid = $_POST['workspace_id'];
+  $channelid = $_POST['channel_id'];
+  $userid = $_POST['user_id'];
+
+  $data = $this->user_model->delete_member_from_channel($workspaceid, $channelid, $userid);
+  if ($data) {
+    $this->session->set_flashdata('delete_channel_member_msg', 'Member Deleted Successfully from the Channel');
+  }
+  echo json_encode($data);
+}
+
+public function add_msg_to_db(){
+
+  $channelid = $_POST['channel_id'];
+  $userid = $_POST['user_id'];
+  $message = $_POST['message'];
+
+  $data = $this->user_model->add_msg_to_db($channelid, $userid, $message);
+  echo json_encode($data);
+}
+
 public function user_logout(){
 
   $this->session->sess_destroy();

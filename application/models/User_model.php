@@ -49,11 +49,15 @@ public function email_check($email){
 
 public function workspace($user_id){
 
-  $this->db->select('*');
-  $this->db->from('workspace');
-  $this->db->where('creater_ID',$user_id);
+  // $query = $this->db->query("SELECT u.nickname as nickname, m.body as body
+  //                                   from message as m
+  //                                   inner join user as u
+  //                                   on u.user_ID = m.composer_ID
+  //                                   where m.channel_ID = '$channel_id'
+  //                                   order by m.create_time");
+  $query = $this->db->query("SELECT * from workspace where workspace_ID in (Select workspace_id from workspacerole where member_ID = '$user_id')");
 
-  if($query=$this->db->get())
+  if($query->result())
   {
 
     return $query->result_array();
@@ -68,13 +72,13 @@ public function workspace($user_id){
 
 public function get_channels($user_id,$workspace_id){
 // SELECT * FROM CHANNEL INNER JOIN WORKSPACEROLE as W using (membership_ID) where W.member_ID = 6 and workspace_ID = 1;
-  $this->db->select('*');
-  $this->db->from('CHANNEL');
-  $this->db->join('WORKSPACEROLE','WORKSPACEROLE.membership_ID = CHANNEL.membership_ID','inner');
-  $this->db->where('member_ID',$user_id);
-  $this->db->where('workspace_ID',$workspace_id);
 
-  if($query=$this->db->get())
+  $query = $this->db->query("SELECT c.channel_ID,c.name from CHANNEL as c
+                              where channel_ID in
+                              (Select channel_ID from CHANNELMEMBERSHIP where user_ID = $user_id)
+                              and c.workspace_id = '$workspace_id'");
+
+  if($query->result())
   {
 
     return $query->result_array();
@@ -87,7 +91,7 @@ public function get_channels($user_id,$workspace_id){
 
 public function get_channel_users($channel_id){
 
-  $query = $this->db->query('SELECT username,nickname FROM USER INNER JOIN CHANNELMEMBERSHIP USING (user_ID) WHERE channel_ID ='.$channel_id);
+  $query = $this->db->query('SELECT distinct username,nickname,user_ID FROM USER INNER JOIN CHANNELMEMBERSHIP USING (user_ID) WHERE channel_ID ='.$channel_id);
 
   if($query->result())
   {
@@ -104,7 +108,7 @@ public function get_channel_users($channel_id){
 
 public function get_channel_messages($channel_id){
   #$channel_id = mysql_real_escape_string($channel_id);
-  $query = $this->db->query("SELECT u.nickname as nickname, m.body as body
+  $query = $this->db->query("SELECT u.username, u.user_ID, u.nickname as nickname, m.body as body
                                     from message as m
                                     inner join user as u
                                     on u.user_ID = m.composer_ID
@@ -131,7 +135,7 @@ public function get_channel_messages($channel_id){
 
 public function get_nonmembers_workspace($workspace_id){
   #$channel_id = mysql_real_escape_string($channel_id);
-  $query = $this->db->query("SELECT u.user_ID,u.username
+  $query = $this->db->query("SELECT  distinct u.user_ID,u.username
                   from user as u where u.user_ID not in (select member_ID from WORKSPACEROLE where workspace_ID ='$workspace_id' ) ");
 
 
@@ -171,17 +175,10 @@ public function get_members_workspace($workspace_id){
 }
 
 public function get_non_channel_members($channel_id){
-  #$channel_id = mysql_real_escape_string($channel_id);
-  // SELECT user_ID, username from user where user_ID in ( SELECT w.member_ID from WORKSPACEROLE as w where w.member_ID not in (SELECT user_ID from CHANNELMEMBERSHIP where channel_ID = 3))
-  // Select member_ID from WORKSPACEROLE where workspace_ID =
-  //   (Select workspace_ID from WORKSPACEROLE where membership_ID =
-  //     (Select membership_ID from CHANNEL where channel_ID = 1)) and member_ID not in
-  //       (Select user_ID from CHANNELMEMBERSHIP where channel_ID = 1);
+
   $query = $this->db->query("SELECT username, user_ID from USER where user_ID in
     (SELECT member_ID from WORKSPACEROLE where workspace_ID =
-      (SELECT workspace_ID from WORKSPACEROLE where membership_ID = 
-        (SELECT membership_ID from CHANNEL where channel_ID = '$channel_id')) and member_ID not in
-          (SELECT user_ID from CHANNELMEMBERSHIP where channel_ID = '$channel_id'))");
+      (SELECT workspace_ID from CHANNEL where channel_ID = '$channel_id') and user_ID not in (Select user_ID from CHANNELMEMBERSHIP where channel_ID ='$channel_id'))");
 
 
   if($query->result())
@@ -217,6 +214,45 @@ public function get_workspace_members($workspace_id){
   }
 
 
+}
+
+
+public function add_to_workspace($workspaceid, $userid, $role){
+  if ($role == 'admin') {
+    // code...
+    $query = $this->db->query("INSERT INTO WORKSPACEROLE VALUES (default, $userid, $workspaceid, 'ADMIN',default)");
+
+  }elseif ($role == 'member') {
+    // code...
+    $query = $this->db->query("INSERT INTO WORKSPACEROLE VALUES (default, $userid, $workspaceid, 'MEMBER',default)");
+  }
+
+  return TRUE;
+}
+
+public function delete_from_workspace($workspaceid, $userid, $role){
+  if ($role == 'member') {
+    $query = $this->db->query("DELETE FROM WORKSPACEROLE where member_ID = '$userid' and workspace_ID = '$workspaceid' and role = 'MEMBER'");
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+public function add_member_to_channel($workspaceid, $channelid, $userid){
+    $query = $this->db->query("INSERT into CHANNELMEMBERSHIP values($userid, $channelid, default)");
+    return TRUE;
+
+}
+
+public function delete_member_from_channel($workspaceid, $channelid, $userid){
+    $query = $this->db->query("DELETE FROM CHANNELMEMBERSHIP where channel_ID  = '$channelid' and user_ID = '$userid'");
+    return TRUE;
+}
+
+public function add_msg_to_db($channelid, $userid, $message){
+    $query = $this->db->query("INSERT INTO MESSAGE(message_ID,composer_ID, body, channel_ID, create_time) values(DEFAULT,'$userid','$message','$channelid',DEFAULT)");
+    return TRUE;
 }
 
 }

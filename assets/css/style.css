@@ -14,3 +14,7 @@
   font-style: italic;
 
 }
+
+.channel-messages-div{
+  overflow: scroll;
+}

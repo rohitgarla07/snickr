@@ -69,7 +69,40 @@ if(!$user_id){
 
 
        </div>
-
+       <?php
+          $delete_msg= $this->session->flashdata('delete_ws_member');
+          $member_added_successfull= $this->session->flashdata('member_added_successfull');
+          $channel_delete_msg= $this->session->flashdata('delete_channel_member_msg');
+          $channel_added_msg= $this->session->flashdata('add_channel_member_msg');
+              if($delete_msg){
+                ?>
+                <div class="alert alert-success">
+                  <?php echo $delete_msg; ?>
+                </div>
+              <?php
+              }
+              if($member_added_successfull){
+                ?>
+                <div class="alert alert-success">
+                  <?php echo $member_added_successfull; ?>
+                </div>
+                <?php
+              }
+              if($channel_delete_msg){
+                ?>
+                <div class="alert alert-success">
+                  <?php echo $channel_delete_msg; ?>
+                </div>
+                <?php
+              }
+              if($channel_added_msg){
+                ?>
+                <div class="alert alert-success">
+                  <?php echo $channel_added_msg; ?>
+                </div>
+                <?php
+              }
+        ?>
       <!-- create a workspace modal -->
       <div class="modal fade" id="exampleModalWork" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -157,8 +190,8 @@ if(!$user_id){
               </div>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Admin</button>
-              <button type="button" class="btn btn-primary">Member</button>
+              <button type="button" class="add-admin-to-workspace-button btn btn-secondary" data-dismiss="modal">Admin</button>
+              <button type="button" class="add-member-to-workspace-button btn btn-primary">Member</button>
             </div>
           </div>
         </div>
@@ -185,7 +218,7 @@ if(!$user_id){
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-              <button type="button" class="btn btn-primary">Delete Member</button>
+              <button type="button" class="delete-member-button btn btn-primary">Delete Member</button>
             </div>
           </div>
         </div>
@@ -236,7 +269,7 @@ if(!$user_id){
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-              <button type="button" class="btn btn-primary">Add Member</button>
+              <button type="button" class="add-member-to-channel-button btn btn-primary">Add Member</button>
             </div>
           </div>
         </div>
@@ -255,14 +288,14 @@ if(!$user_id){
             <div class="modal-body">
               <div>
                 <!-- SELECTING MEMBERS TO DELETE FROM WORKSPACE -->
-                <select class="form-control border delete-channel-users-options" style="margin-top: -8px; height: 45px;">
+                <select id="select_channel_members" class="form-control border delete-channel-users-options" style="margin-top: -8px; height: 45px;">
 
                </select>
               </div>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-              <button type="button" class="btn btn-primary">Delete Member</button>
+              <button type="button" class="delete-from-channel-button btn btn-primary">Delete Member</button>
             </div>
           </div>
         </div>
@@ -309,11 +342,11 @@ if(!$user_id){
          <!-- meesages body -->
        </div>
 
-       <div class="input-group mb-3" style="position: fixed;bottom: 0;max-width:80%">
-        <input type="text" class="form-control" style="margin-left:10px; max-width:80%" placeholder="Message" aria-label="Recipient's username" aria-describedby="basic-addon2">
-        <div class="input-group-append" style="max-width:90%">
-          <span class="input-group-text" style="max-width:90%;" id="basic-addon2">@</span>
-        </div>
+       <div class="message-div input-group mb-3" style="position: fixed;bottom: 0;max-width:80%">
+         <input type="text" class="message-textbox form-control" style="margin-left:10px; max-width:80%" placeholder="Message" aria-label="Recipient's username" aria-describedby="basic-addon2">
+         <div class="input-group-append" style="max-width:90%">
+           <button type="button" class="send-msg-button btn btn-secondary">Send</button>
+         </div>
       </div>
      </div>
 
@@ -339,13 +372,14 @@ if(!$user_id){
     function display_channels(data){
       $(".channel-div").html('');
       for (var i = 0; i < data.length; i++) {
-        $(".channel-div").append('<div data-channelid='+data[i]["channel_ID"]+
-                                ' class="channel-div-child list-group-item \
-                                list-group-item-action bg-light">'+
-                                data[i]["name"]+'</div>');}
+        $(".channel-div").append('<div data-channelid='+data[i]["channel_ID"]+' \
+                                    class="channel-div-child list-group-item \
+                                    list-group-item-action bg-light" \
+                                    id="channel_'+data[i]["channel_ID"]+'">'+data[i]["name"]+' \
+                                  </div>');}
     };
 
-    function display_channel_users(data, channel_id, flag){
+    function display_channel_users(data, workspace_id, channel_id, flag){
       if (flag == 'display_user') {
         $(".channel-users-div").html('');
         for (var i = 0; i < data.length; i++) {
@@ -360,18 +394,18 @@ if(!$user_id){
                                         style="position: fixed;bottom: 0; \
                                         background-color: antiquewhite;"> \
                                         <a href="#" data-toggle="modal" data-channelid='+channel_id+'\
-                                        data-target="#exampleModalMemberChannel" \
+                                        data-target="#exampleModalMemberChannel" data-workspaceid='+workspace_id+' \
                                         class="add-delete-a-member list-group-item list-group-item-action" \
                                         style="background-color: antiquewhite;">Add A Member</a> \
                                         <a href="#" data-toggle="modal" data-channelid='+channel_id+'\
-                                        data-target="#exampleModalDeleteFromChannel" \
+                                        data-target="#exampleModalDeleteFromChannel" data-workspaceid='+workspace_id+'\
                                         class="add-delete-a-member list-group-item list-group-item-action" \
                                         style="background-color: antiquewhite;">Delete A Member</a> \
                                         </div>');
       }else if (flag == 'display_user_to_delete') {
         $(".delete-channel-users-options").html("");
         for (var i = 0; i < data.length; i++) {
-          $(".delete-channel-users-options").append('<option class="dropdown-item" value= >'+data[i]['username']+' '+data[i]['nickname']+'</option>');
+          $(".delete-channel-users-options").append('<option class="dropdown-item" data-userid='+data[i]['user_ID']+' value= >'+data[i]['username']+' '+data[i]['nickname']+'</option>');
         }
 
       }
@@ -381,8 +415,8 @@ if(!$user_id){
     function display_channel_messages(data){
       $(".channel-messages-div").html('');
       for (var i = 0; i < data.length; i++) {
-        $(".channel-messages-div").append('<div data-username='+data[i]["username"]+
-                                          'class="channel-messages-div-child list-group-item \
+        $(".channel-messages-div").append('<div data-username='+data[i]["username"]+' \
+                                          class="channel-messages-div-child list-group-item \
                                           list-group-item-action"> '+'# '+data[i]["nickname"]+
                                           '<br> ( '+data[i]["body"]+' ) '+'</div>');}
     };
@@ -391,25 +425,25 @@ if(!$user_id){
     function display_non_members(data){
       $("#select_non_members").html("");
       for (var i = 0; i < data.length; i++) {
-        $("#select_non_members").append('<option class="dropdown-item" >'+data[i]["username"]+' </option>');}
+        $("#select_non_members").append('<option class="dropdown-item" data-userid='+data[i]['user_ID']+'>'+data[i]["username"]+' </option>');}
     };
 
     function display_members(data){
       $("#select_members").html("");
       for (var i = 0; i < data.length; i++) {
-        $("#select_members").append('<option class="dropdown-item" >'+data[i]["username"]+' </option>');}
+        $("#select_members").append('<option class="dropdown-item" data-userid='+data[i]['user_ID']+'>'+data[i]["username"]+' </option>');}
     };
 
     function display_non_channel_members(data){
       $("#select_non_channel_members").html("");
       for (var i = 0; i < data.length; i++) {
-        $("#select_non_channel_members").append('<option class="dropdown-item" >'+data[i]["username"]+' </option>');}
+        $("#select_non_channel_members").append('<option class="dropdown-item" data-userid='+data[i]['user_ID']+'>'+data[i]["username"]+' </option>');}
     };
 
     function display_workspace_members(data,flag){
         $("#select_workspace_members").html("");
         for (var i = 0; i < data.length; i++) {
-          $("#select_workspace_members").append('<option class="dropdown-item" >'+data[i]["username"]+' </option>');}
+          $("#select_workspace_members").append('<option class="dropdown-item" data-userid='+data[i]['user_ID']+'>'+data[i]["username"]+' </option>');}
       // $("#select_workspace_members").html("");
       // for (var i = 0; i < data.length; i++) {
       //   $("#select_workspace_members").append('<option class="dropdown-item" >'+data[i]["username"]+' </option>');}
@@ -429,15 +463,17 @@ if(!$user_id){
           dataType: "json",
           success: function(data, status, xhr) {
             console.log("Success");
+            console.log(data)
             display_channels(data);
           },
           error: function(data) {
+            console.log(data);
             console.log("Error Occurred in the controller");
           }
       });
     };
 
-    function get_channel_users(channel_id, flag){
+    function get_channel_users(workspace_id, channel_id, flag){
 
       $.ajax({
           type: "POST",
@@ -449,7 +485,7 @@ if(!$user_id){
           dataType: "json",
           success: function(data, status, xhr) {
             console.log("Success");
-            display_channel_users(data, channel_id, flag);
+            display_channel_users(data, workspace_id, channel_id, flag);
           },
           error: function(data) {
             console.log("Error Occurred in the controller");
@@ -558,6 +594,111 @@ if(!$user_id){
       });
     };
 
+    function add_to_workspace(workspace_id, user_id, role){
+      $.ajax({
+          type: "POST",
+          url: "<?=base_url('user/add_to_workspace')?>",
+          crossDomain: true,
+          data: {
+              workspace_id:workspace_id,
+              user_id : user_id,
+              role : role
+          },
+          dataType: "json",
+          success: function(data, status, xhr) {
+            console.log("Success message");
+            console.log(data);
+          },
+          error: function(data) {
+
+          }
+      });
+    };
+
+    function add_member_to_channel(workspace_id, channel_id, user_id){
+      $.ajax({
+          type: "POST",
+          url: "<?=base_url('user/add_member_to_channel')?>",
+          crossDomain: true,
+          data: {
+              workspace_id:workspace_id,
+              channel_id:channel_id,
+              user_id : user_id,
+          },
+          dataType: "json",
+          success: function(data, status, xhr) {
+            console.log("Success message");
+            console.log(data);
+          },
+          error: function(data) {
+
+          }
+      });
+    };
+
+    function delete_from_workspace(workspace_id, user_id, role){
+      $.ajax({
+          type: "POST",
+          url: "<?=base_url('user/delete_from_workspace')?>",
+          crossDomain: true,
+          data: {
+              workspace_id:workspace_id,
+              user_id : user_id,
+              role : role
+          },
+          dataType: "json",
+          success: function(data, status, xhr) {
+            console.log("Success message");
+            console.log(data);
+          },
+          error: function(data) {
+            console.log('Error');
+          }
+      });
+    };
+
+    function delete_member_from_channel(workspace_id, channel_id, user_id){
+      $.ajax({
+          type: "POST",
+          url: "<?=base_url('user/delete_member_from_channel')?>",
+          crossDomain: true,
+          data: {
+              workspace_id:workspace_id,
+              channel_id:channel_id,
+              user_id : user_id,
+          },
+          dataType: "json",
+          success: function(data, status, xhr) {
+            console.log("Success message");
+            console.log(data);
+          },
+          error: function(data) {
+
+          }
+      });
+    };
+
+    function add_msg_to_db(channel_id, user_id, message){
+      $.ajax({
+          type: "POST",
+          url: "<?=base_url('user/add_msg_to_db')?>",
+          crossDomain: true,
+          data: {
+              channel_id :channel_id,
+              user_id : user_id,
+              message : message
+          },
+          dataType: "json",
+          success: function(data, status, xhr) {
+            console.log("Success message");
+            console.log(data);
+          },
+          error: function(data) {
+            console.log('Error');
+          }
+      });
+    };
+
     // send an ajax request to fetch the channels for particular user_id and workspace id
      $( "#select_workspace" ).change(function() {
        $(".channel-users-div").html("");
@@ -589,8 +730,15 @@ if(!$user_id){
    // send an ajax request to fetch the users for particular channel id
     $(document).on('click', ".channel-div-child", function() {
      var channel_id = $(this).data("channelid");
-     get_channel_users(channel_id, 'display_user');
+     var workspace_id = Number($("#select_workspace").find(':selected').val());
+     console.log(channel_id, workspace_id);
+     get_channel_users(workspace_id, channel_id, 'display_user');
      get_channel_messages(channel_id);
+
+     $(".message-div").html('<input type="text" data-channelid='+channel_id+' class="message-textbox form-control" style="margin-left:10px; max-width:80%" placeholder="Message" aria-label="Recipient"s username" aria-describedby="basic-addon2"> \
+                             <div class="input-group-append" style="max-width:90%"> \
+                               <button type="button" class="send-msg-button btn btn-secondary">Send</button> \
+                             </div> ');
 
    });
 
@@ -610,11 +758,14 @@ if(!$user_id){
 
    $(document).on('click', ".add-delete-a-member", function() {
      var channel_id = $(this).data("channelid");
-     console.log(channel_id);
+     var workspace_id = $(this).data("workspaceid");
      $(".add-member-to-channel-title").html('Add a member to Channel '+channel_id);
      $(".delete-member-from-channel-title").html('Delete a member from channel '+channel_id);
+     $(".delete-from-channel-button").attr('data-channelid', channel_id);
+     $(".add-member-to-channel-button").attr('data-channelid', channel_id);
+
      get_non_channel_members(channel_id);
-     get_channel_users(channel_id, 'display_user_to_delete')
+     get_channel_users(workspace_id, channel_id, 'display_user_to_delete')
 
 
    });
@@ -629,6 +780,8 @@ if(!$user_id){
   $(document).on('click', ".add-member-to-workspace", function() {
    var workspace_id = $(this).data("workspaceid");
    $(".add-member-to-workspace-header").html('Add member to Workspace '+workspace_id);
+   $(".add-member-to-workspace-button").attr('data-workspaceid', workspace_id);
+   $(".add-admin-to-workspace-button").attr('data-workspaceid', workspace_id);
 
    get_nonmembers_workspace(workspace_id);
 
@@ -637,11 +790,62 @@ if(!$user_id){
  $(document).on('click', ".delete-member-from-workspace", function() {
   var workspace_id = $(this).data("workspaceid");
   $(".delete-member-from-workspace-header").html('Delete a member from Workspace '+workspace_id);
+  $(".delete-member-button").attr('data-workspaceid', workspace_id);
 
   get_members_workspace(workspace_id);
 
-});
-   </script>
+  });
+
+  $(document).on('click', ".add-admin-to-workspace-button", function() {
+    var workspace_id = $(this).data("workspaceid");
+    var user_id = $("#select_non_members").find(':selected').data('userid');
+    add_to_workspace(workspace_id, user_id, 'admin');
+    location.reload();
+  });
+
+  $(document).on('click', ".add-member-to-workspace-button", function() {
+    var workspace_id = $(this).data("workspaceid");
+    var user_id = $("#select_non_members").find(':selected').data('userid');
+    add_to_workspace(workspace_id, user_id, 'member');
+    location.reload();
+  });
+
+  $(document).on('click', ".delete-member-button", function() {
+    var workspace_id = $(this).data("workspaceid");
+    var user_id = $("#select_members").find(':selected').data('userid');
+    console.log(user_id, workspace_id);
+    delete_from_workspace(workspace_id, user_id, 'member');
+    location.reload();
+  });
+
+  $(document).on('click', ".add-member-to-channel-button", function() {
+    var channel_id = $(this).data("channelid");
+    var workspace_id = $(this).data("workspaceid");
+    var user_id = $("#select_non_channel_members").find(':selected').data('userid');
+    console.log(user_id, channel_id, workspace_id);
+    add_member_to_channel(workspace_id, channel_id, user_id);
+    location.reload();
+  });
+
+  $(document).on('click', ".delete-from-channel-button", function() {
+    var channel_id = $(this).data("channelid");
+    var workspace_id = $(this).data("workspaceid");
+    var user_id = $("#select_channel_members").find(':selected').data('userid');
+    console.log(user_id, channel_id);
+    delete_member_from_channel(workspace_id, channel_id, user_id);
+    location.reload();
+  });
+
+  $(document).on('click', ".send-msg-button", function() {
+    var message = $(".message-textbox").val();
+    var channel_id = $(".message-textbox").data("channelid");
+    var user_id = "<?php echo $this->session->userdata('user_id');?>";
+    console.log(message, channel_id, user_id);
+    add_msg_to_db(channel_id, user_id, message);
+    $('#channel_'+channel_id).click();
+  });
+
+  </script>
 
  </body>
 
