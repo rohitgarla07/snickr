@@ -43,22 +43,7 @@ if(!$user_id){
        <div class="dropdown-divider"></div>
        <div>
          <select id="select_workspace" class="form-control border" style="margin-top: -8px; height: 45px;">
-           <?php
-           $counter = 1;
-           while (true) {
-             // creating a *variable* varibale name
-             $a = 'workspace_'.$counter;
-             if (isset($$a['name'])){
-               $user_id=$this->session->userdata('user_id');
-               $workspace_id = $$a['workspace_id'];
-               echo '<option class="dropdown-item" value='.$$a['workspace_id'].' >'.$$a['name'].'</option>';
-               // echo $$a['name'];
-               $counter = $counter + 1;
-             }else{
-               break;
-             }
-           }
-           ?>
+
         </select>
 
        </div>
@@ -116,20 +101,20 @@ if(!$user_id){
             <div class="modal-body">
               <div class="input-group mb-3">
                 <div class="input-group-prepend">
-                  <span class="input-group-text" id="inputGroup-sizing-default">Name</span>
+                  <span class=" input-group-text" id="inputGroup-sizing-default">Name</span>
                 </div>
-                <input type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
+                <input type="text" class="create-workspace-name form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
               </div>
               <div class="input-group mb-3">
                 <div class="input-group-prepend">
-                  <span class="input-group-text" id="inputGroup-sizing-default">Description</span>
+                  <span class=" input-group-text" id="inputGroup-sizing-default">Description</span>
                 </div>
-                <input type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
+                <input type="text" class="create-workspace-desc form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
               </div>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-              <button type="button" class="btn btn-primary">Save changes</button>
+              <button type="button" class="create-workspace-button btn btn-primary">Save changes</button>
             </div>
           </div>
         </div>
@@ -148,23 +133,25 @@ if(!$user_id){
             <div class="modal-body">
               <div class="input-group mb-3">
                 <div class="input-group-prepend">
-                  <span class="input-group-text" id="inputGroup-sizing-default">Name</span>
+                  <span class=" input-group-text" id="inputGroup-sizing-default">Name</span>
                 </div>
-                <input type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
+                <input type="text" class="create-channel-name-input form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
               </div>
               <div class="input-group mb-3">
                 <div class="input-group-prepend">
                   <span class="input-group-text" id="inputGroup-sizing-default">Description</span>
                 </div>
-                <input type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
+                <input type="text" class="create-channel-desc-input form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
               </div>
-              <label class="radio-inline"><input type="radio" name="optradio" id="PRIVATE">   Private</label>&nbsp;&nbsp;
-              <label class="radio-inline"><input type="radio" name="optradio" id="PUBLIC">   Public</label>&nbsp;&nbsp;
-              <label class="radio-inline"><input type="radio" name="optradio" id='DIRECT'>   Direct</label>
+              <form id="myForm-channel">
+                <label class="radio-inline"><input type="radio" name="optradio" value="PRIVATE">   Private</label>&nbsp;&nbsp;
+                <label class="radio-inline"><input type="radio" name="optradio" value="PUBLIC">   Public</label>&nbsp;&nbsp;
+                <label class="radio-inline"><input type="radio" name="optradio" value='DIRECT'>   Direct</label>
+              </form>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-              <button type="button" class="btn btn-primary">Save changes</button>
+              <button type="button" class="create-channel-button btn btn-primary">Save changes</button>
             </div>
           </div>
         </div>
@@ -243,7 +230,7 @@ if(!$user_id){
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-              <button type="button" class="btn btn-primary">Confirm</button>
+              <button type="button" class="make-admin-confirm-button btn btn-primary">Confirm</button>
             </div>
           </div>
         </div>
@@ -699,6 +686,100 @@ if(!$user_id){
       });
     };
 
+    function create_workspace(name, desc, user_id){
+      $.ajax({
+          type: "POST",
+          url: "<?=base_url('user/create_workspace')?>",
+          crossDomain: true,
+          data: {
+              name : name,
+              desc : desc,
+              user_id : user_id
+          },
+          dataType: "json",
+          success: function(data, status, xhr) {
+            console.log("Success message");
+            console.log(data);
+          },
+          error: function(data) {
+            console.log('Error');
+          }
+      });
+    };
+
+    function create_channel(workspace_id, name, desc, user_id, channel_type){
+      $.ajax({
+          type: "POST",
+          url: "<?=base_url('user/create_channel')?>",
+          crossDomain: true,
+          data: {
+              workspace_id : workspace_id,
+              name : name,
+              desc : desc,
+              user_id : user_id,
+              channel_type : channel_type
+          },
+          dataType: "json",
+          success: function(data, status, xhr) {
+            console.log("Success message");
+            console.log(data);
+          },
+          error: function(data) {
+            console.log(data);
+            console.log('Error');
+          }
+      });
+    };
+
+    function make_admin(workspace_id, user_id){
+      $.ajax({
+          type: "POST",
+          url: "<?=base_url('user/make_admin')?>",
+          crossDomain: true,
+          data: {
+              workspace_id : workspace_id,
+              user_id : user_id
+          },
+          dataType: "json",
+          success: function(data, status, xhr) {
+            console.log("Success message");
+            console.log(data);
+          },
+          error: function(data) {
+            console.log(data);
+            console.log('Error');
+          }
+      });
+    };
+
+    $( document ).ready(function() {
+      var user_id = "<?php echo $this->session->userdata('user_id');?>";
+
+      $.ajax({
+          type: "POST",
+          url: "<?=base_url('user/get_workspaces')?>",
+          crossDomain: true,
+          data: {
+              user_id : user_id
+          },
+          dataType: "json",
+          success: function(data, status, xhr) {
+            console.log("Success message");
+            console.log(data);
+            $( "#select_workspace" ).html("");
+            for (var i = 0; i < data.length; i++) {
+              console.log(data[i]['workspace_ID']);
+              $( "#select_workspace" ).append('<option class="dropdown-item" value='+data[i]["workspace_ID"]+' >'+data[i]["name"]+'</option>');
+            }
+
+          },
+          error: function(data) {
+            console.log('Error');
+          }
+      });
+
+    });
+
     // send an ajax request to fetch the channels for particular user_id and workspace id
      $( "#select_workspace" ).change(function() {
        $(".channel-users-div").html("");
@@ -724,8 +805,21 @@ if(!$user_id){
                                           <a href="#" data-toggle="modal" data-target="#exampleModalWork" \
                                           class="list-group-item list-group-item-action bg-light">Create a Workspace</a> \
                                           <a href="#" data-toggle="modal" data-target="#exampleModalChannel" \
-                                          class="list-group-item list-group-item-action bg-light">Create a Channel</a>');
+                                          data-workspaceid='+workspace_id+' \
+                                          class="create-channel list-group-item list-group-item-action bg-light">Create a Channel</a>');
      }).change();
+
+     $(document).on('click', ".make-admin-button", function() {
+       var workspace_id = $(this).data("workspaceid");
+       $(".make-admin-confirm-button").attr('data-workspaceid', workspace_id);
+     });
+
+     $(document).on('click', ".make-admin-confirm-button", function() {
+       var workspace_id = $(this).data("workspaceid");
+       var user_id = $("#select_workspace_members").find(':selected').data('userid');
+       console.log(workspace_id, user_id);
+       make_admin(workspace_id, user_id);
+     });
 
    // send an ajax request to fetch the users for particular channel id
     $(document).on('click', ".channel-div-child", function() {
@@ -845,6 +939,30 @@ if(!$user_id){
     $('#channel_'+channel_id).click();
   });
 
+  $(document).on('click', ".create-workspace-button", function() {
+    var name = $(".create-workspace-name").val();
+    var desc = $(".create-workspace-desc").val();
+    var user_id = "<?php echo $this->session->userdata('user_id');?>";
+    console.log(name, desc, user_id);
+    create_workspace(name, desc, user_id);
+    location.reload();
+  });
+
+  $(document).on('click', ".create-channel", function() {
+    var workspace_id = $(this).data("workspaceid");
+    $(".create-channel-button").attr('data-workspaceid', workspace_id);
+  });
+
+  $(document).on('click', ".create-channel-button", function() {
+    var name = $(".create-channel-name-input").val();
+    var workspace_id = $(this).data("workspaceid");
+    var desc = $(".create-channel-desc-input").val();
+    var user_id = "<?php echo $this->session->userdata('user_id');?>";
+    var channel_type = $('input[name=optradio]:checked', '#myForm-channel').val();
+    console.log(name, desc, user_id, channel_type, workspace_id);
+    create_channel(workspace_id, name, desc, user_id, channel_type);
+    location.reload();
+  });
   </script>
 
  </body>

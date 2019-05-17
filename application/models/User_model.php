@@ -47,7 +47,7 @@ public function email_check($email){
 
 }
 
-public function workspace($user_id){
+public function get_workspaces($user_id){
 
   // $query = $this->db->query("SELECT u.nickname as nickname, m.body as body
   //                                   from message as m
@@ -253,6 +253,26 @@ public function delete_member_from_channel($workspaceid, $channelid, $userid){
 public function add_msg_to_db($channelid, $userid, $message){
     $query = $this->db->query("INSERT INTO MESSAGE(message_ID,composer_ID, body, channel_ID, create_time) values(DEFAULT,'$userid','$message','$channelid',DEFAULT)");
     return TRUE;
+}
+
+public function create_workspace($name, $desc, $user_id){
+  $query = $this->db->query("INSERT INTO WORKSPACE values(DEFAULT,'$name','$desc','$user_id',DEFAULT)");
+  return TRUE;
+}
+
+public function create_channel($workspaceid, $name, $desc, $user_id, $channel_type){
+  $query = $this->db->query("INSERT INTO CHANNEL(channel_ID,workspace_ID,name,type,create_time,description,creater_ID) values(DEFAULT,'$workspaceid', '$name', '$channel_type', DEFAULT,'$desc',$user_id)");
+  // $query = $this->db->query("INSERT INTO CHANNELMEMBERSHIP values(DEFAULT,'$workspaceid', '$name', '$channel_type', DEFAULT,'$desc')");
+  
+  return TRUE;
+}
+
+
+public function make_admin($workspaceid, $user_id){
+  $query = $this->db->query("UPDATE WORKSPACEROLE SET role = 'ADMIN' where member_ID = $user_id and workspace_ID = $workspaceid");
+  // $query = $this->db->query("INSERT INTO CHANNELMEMBERSHIP values(DEFAULT,'$workspaceid', '$name', '$channel_type', DEFAULT,'$desc')");
+
+  return TRUE;
 }
 
 }

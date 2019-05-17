@@ -82,7 +82,7 @@ function login_user(){
 
 function user_profile(){
   $userid = $_SESSION['user_id'];
-  $workspace_data = $this->user_model->workspace($userid);
+  $workspace_data = $this->user_model->get_workspaces($userid);
   $data = array();
   foreach ($workspace_data as $ws) {
     $data['workspace_'.$ws['workspace_ID']] = array('workspace_id' => $ws['workspace_ID'],
@@ -93,6 +93,13 @@ function user_profile(){
   }
 
   $this->load->view('user_profile.php', $data);
+}
+
+public function get_workspaces(){
+  $userid = $_POST['user_id'];
+  $workspace_data = $this->user_model->get_workspaces($userid);
+
+  echo json_encode($workspace_data);
 }
 
 public function get_channels(){
@@ -207,6 +214,37 @@ public function add_msg_to_db(){
   $message = $_POST['message'];
 
   $data = $this->user_model->add_msg_to_db($channelid, $userid, $message);
+  echo json_encode($data);
+}
+
+public function create_workspace(){
+
+  $name = $_POST['name'];
+  $desc = $_POST['desc'];
+  $user_id = $_POST['user_id'];
+
+  $data = $this->user_model->create_workspace($name, $desc, $user_id);
+  echo json_encode($data);
+}
+
+public function create_channel(){
+
+  $workspaceid = $_POST['workspace_id'];
+  $channel_type = $_POST['channel_type'];
+  $name = $_POST['name'];
+  $desc = $_POST['desc'];
+  $user_id = $_POST['user_id'];
+
+  $data = $this->user_model->create_channel($workspaceid, $name, $desc, $user_id, $channel_type);
+  echo json_encode($data);
+}
+
+public function make_admin(){
+
+  $workspaceid = $_POST['workspace_id'];
+  $user_id = $_POST['user_id'];
+
+  $data = $this->user_model->make_admin($workspaceid,$user_id);
   echo json_encode($data);
 }
 
