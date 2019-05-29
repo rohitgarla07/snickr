@@ -73,7 +73,7 @@ public function get_workspaces($user_id){
 public function get_channels($user_id,$workspace_id){
 // SELECT * FROM CHANNEL INNER JOIN WORKSPACEROLE as W using (membership_ID) where W.member_ID = 6 and workspace_ID = 1;
 
-  $query = $this->db->query("SELECT c.channel_ID,c.name from CHANNEL as c
+  $query = $this->db->query("SELECT c.channel_ID,c.name,c.type from CHANNEL as c
                               where channel_ID in
                               (Select channel_ID from CHANNELMEMBERSHIP where user_ID = $user_id)
                               and c.workspace_id = '$workspace_id'");
@@ -263,7 +263,7 @@ public function create_workspace($name, $desc, $user_id){
 public function create_channel($workspaceid, $name, $desc, $user_id, $channel_type){
   $query = $this->db->query("INSERT INTO CHANNEL(channel_ID,workspace_ID,name,type,create_time,description,creater_ID) values(DEFAULT,'$workspaceid', '$name', '$channel_type', DEFAULT,'$desc',$user_id)");
   // $query = $this->db->query("INSERT INTO CHANNELMEMBERSHIP values(DEFAULT,'$workspaceid', '$name', '$channel_type', DEFAULT,'$desc')");
-  
+
   return TRUE;
 }
 

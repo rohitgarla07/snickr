@@ -82,15 +82,21 @@ function login_user(){
 
 function user_profile(){
   $userid = $_SESSION['user_id'];
+
+
+
   $workspace_data = $this->user_model->get_workspaces($userid);
   $data = array();
-  foreach ($workspace_data as $ws) {
-    $data['workspace_'.$ws['workspace_ID']] = array('workspace_id' => $ws['workspace_ID'],
-                                                    'name' => $ws['name'],
-                                                    'desc' => $ws['description'],
-                                                    'creater_id' => $ws['creater_ID'],
-                                                    'create_time' => $ws['create_time'] );
+  if ($workspace_data) {
+    foreach ($workspace_data as $ws) {
+      $data['workspace_'.$ws['workspace_ID']] = array('workspace_id' => $ws['workspace_ID'],
+                                                      'name' => $ws['name'],
+                                                      'desc' => $ws['description'],
+                                                      'creater_id' => $ws['creater_ID'],
+                                                      'create_time' => $ws['create_time'] );
+    }
   }
+
 
   $this->load->view('user_profile.php', $data);
 }

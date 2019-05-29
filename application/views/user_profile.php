@@ -298,7 +298,7 @@ if(!$user_id){
      <div class="channel-members border-right" id="sidebar-wrapper" style="background-color: antiquewhite;">
        <div class="sidebar-heading bold italic" > Channel Members </div>
        <div class="channel-users-div list-group list-group-flush" ></div>
-
+       <div class="add-delete-buttons list-group list-group-flush" style="position: fixed;bottom: 0; background-color: antiquewhite;"> </div>
 
      </div>
 
@@ -356,17 +356,22 @@ if(!$user_id){
 
 
    <script>
+   function escapeRegExp(string){
+      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+    }
+
     function display_channels(data){
       $(".channel-div").html('');
       for (var i = 0; i < data.length; i++) {
         $(".channel-div").append('<div data-channelid='+data[i]["channel_ID"]+' \
+                                    data-channel_type='+data[i]["type"]+' \
                                     class="channel-div-child list-group-item \
                                     list-group-item-action bg-light" \
                                     id="channel_'+data[i]["channel_ID"]+'">'+data[i]["name"]+' \
                                   </div>');}
     };
 
-    function display_channel_users(data, workspace_id, channel_id, flag){
+    function display_channel_users(data, workspace_id, channel_id, flag, channel_type){
       if (flag == 'display_user') {
         $(".channel-users-div").html('');
         for (var i = 0; i < data.length; i++) {
@@ -377,18 +382,21 @@ if(!$user_id){
                                 ' ( '+data[i]["nickname"]+' ) '+'</div>');}
 
         // Dynamically create the Add a Member and Delete a MEMBER
-        $(".channel-members").append('<div class="list-group list-group-flush" \
-                                        style="position: fixed;bottom: 0; \
-                                        background-color: antiquewhite;"> \
-                                        <a href="#" data-toggle="modal" data-channelid='+channel_id+'\
-                                        data-target="#exampleModalMemberChannel" data-workspaceid='+workspace_id+' \
-                                        class="add-delete-a-member list-group-item list-group-item-action" \
-                                        style="background-color: antiquewhite;">Add A Member</a> \
-                                        <a href="#" data-toggle="modal" data-channelid='+channel_id+'\
-                                        data-target="#exampleModalDeleteFromChannel" data-workspaceid='+workspace_id+'\
-                                        class="add-delete-a-member list-group-item list-group-item-action" \
-                                        style="background-color: antiquewhite;">Delete A Member</a> \
-                                        </div>');
+        no_of_user = $(".channel-users-div-child").length;
+        if (channel_type == "DIRECT" && no_of_user >= 2) {
+          $(".add-delete-buttons").html("");
+        }else{
+          $(".add-delete-buttons").html("");
+          $(".add-delete-buttons").append('<a href="#" data-toggle="modal" data-channelid='+channel_id+'\
+                                          data-target="#exampleModalMemberChannel" data-workspaceid='+workspace_id+' \
+                                          class="add-delete-a-member list-group-item list-group-item-action" \
+                                          style="background-color: antiquewhite;">Add A Member</a> \
+                                          <a href="#" data-toggle="modal" data-channelid='+channel_id+'\
+                                          data-target="#exampleModalDeleteFromChannel" data-workspaceid='+workspace_id+'\
+                                          class="add-delete-a-member list-group-item list-group-item-action" \
+                                          style="background-color: antiquewhite;">Delete A Member</a> ');
+        }
+
       }else if (flag == 'display_user_to_delete') {
         $(".delete-channel-users-options").html("");
         for (var i = 0; i < data.length; i++) {
@@ -460,7 +468,7 @@ if(!$user_id){
       });
     };
 
-    function get_channel_users(workspace_id, channel_id, flag){
+    function  get_channel_users(workspace_id, channel_id, flag, channel_type){
 
       $.ajax({
           type: "POST",
@@ -471,8 +479,10 @@ if(!$user_id){
           },
           dataType: "json",
           success: function(data, status, xhr) {
-            console.log("Success");
-            display_channel_users(data, workspace_id, channel_id, flag);
+            console.log("Success", data['length']);
+            console.log(data);
+            let number_of_user = data['length'];
+            display_channel_users(data, workspace_id, channel_id, flag, channel_type);
           },
           error: function(data) {
             console.log("Error Occurred in the controller");
@@ -492,6 +502,7 @@ if(!$user_id){
           success: function(data, status, xhr) {
             console.log("Success message");
             // console.log(data);
+            
             display_channel_messages(data);
           },
           error: function(data) {
@@ -769,7 +780,7 @@ if(!$user_id){
             $( "#select_workspace" ).html("");
             for (var i = 0; i < data.length; i++) {
               console.log(data[i]['workspace_ID']);
-              $( "#select_workspace" ).append('<option class="dropdown-item" value='+data[i]["workspace_ID"]+' >'+data[i]["name"]+'</option>');
+              $( "#select_workspace" ).append('<option class="dropdown-item" data-workspacename="'+data[i]["name"]+'" data-workspaceid="'+data[i]["workspace_ID"]+'" value="'+data[i]["workspace_ID"]+'" >'+data[i]["name"]+'</option>');
             }
 
           },
@@ -784,6 +795,7 @@ if(!$user_id){
      $( "#select_workspace" ).change(function() {
        $(".channel-users-div").html("");
        var workspace_id = Number($(this).val());
+       var workspace_name = $("#select_workspace").find(':selected').data("workspacename");
        var user_id = $("#user").data("userid");
        var channels = get_channels(user_id, workspace_id);
 
@@ -798,6 +810,7 @@ if(!$user_id){
       $(".workspace-footer-options").html('<a href="#" data-toggle="modal" \
                                           data-target="#exampleModalMember" \
                                           data-workspaceid='+workspace_id+' \
+                                          data-workspacename="'+workspace_name+'" \
                                           class="add-member-to-workspace list-group-item list-group-item-action bg-light">Invite Member</a> \
                                           <a href="#" data-toggle="modal" data-target="#exampleModalDelete" \
                                           data-workspaceid='+workspace_id+' \
@@ -824,9 +837,11 @@ if(!$user_id){
    // send an ajax request to fetch the users for particular channel id
     $(document).on('click', ".channel-div-child", function() {
      var channel_id = $(this).data("channelid");
+     var channel_type = $(this).data("channel_type");
      var workspace_id = Number($("#select_workspace").find(':selected').val());
+
      console.log(channel_id, workspace_id);
-     get_channel_users(workspace_id, channel_id, 'display_user');
+     get_channel_users(workspace_id, channel_id, 'display_user', channel_type);
      get_channel_messages(channel_id);
 
      $(".message-div").html('<input type="text" data-channelid='+channel_id+' class="message-textbox form-control" style="margin-left:10px; max-width:80%" placeholder="Message" aria-label="Recipient"s username" aria-describedby="basic-addon2"> \
@@ -873,7 +888,9 @@ if(!$user_id){
 
   $(document).on('click', ".add-member-to-workspace", function() {
    var workspace_id = $(this).data("workspaceid");
-   $(".add-member-to-workspace-header").html('Add member to Workspace '+workspace_id);
+   var workspace_name = $(this).data("workspacename");
+   console.log(workspace_name);
+   $(".add-member-to-workspace-header").html('Add member to '+workspace_name);
    $(".add-member-to-workspace-button").attr('data-workspaceid', workspace_id);
    $(".add-admin-to-workspace-button").attr('data-workspaceid', workspace_id);
 
@@ -935,6 +952,7 @@ if(!$user_id){
     var channel_id = $(".message-textbox").data("channelid");
     var user_id = "<?php echo $this->session->userdata('user_id');?>";
     console.log(message, channel_id, user_id);
+    message = escapeRegExp(message);
     add_msg_to_db(channel_id, user_id, message);
     $('#channel_'+channel_id).click();
   });
@@ -944,6 +962,8 @@ if(!$user_id){
     var desc = $(".create-workspace-desc").val();
     var user_id = "<?php echo $this->session->userdata('user_id');?>";
     console.log(name, desc, user_id);
+    name = escapeRegExp(name);
+    desc = escapeRegExp(desc);
     create_workspace(name, desc, user_id);
     location.reload();
   });
@@ -960,8 +980,11 @@ if(!$user_id){
     var user_id = "<?php echo $this->session->userdata('user_id');?>";
     var channel_type = $('input[name=optradio]:checked', '#myForm-channel').val();
     console.log(name, desc, user_id, channel_type, workspace_id);
+    name = escapeRegExp(name);
+    desc = escapeRegExp(desc);
     create_channel(workspace_id, name, desc, user_id, channel_type);
     location.reload();
+
   });
   </script>
 
